@@ -1,0 +1,34 @@
+# Mini-kit de páginas románticas (sin saber programar)
+
+Incluye 3 archivos que puedes abrir con doble clic desde tu computador o tocando desde tu celular:
+
+1. **te_amo_corazones.html** — corazones volando y formando un corazón con el texto *Te amo*.
+2. **candado_amor.html** — un candado con 3 diales (código por defecto: 1-0-0). Si aciertas, explotan corazones y te lleva a **sorpresa.html**.
+3. **sorpresa.html** — animación de partículas que forman un gran corazón. Toca/clic para hacerlo estallar.
+
+---
+
+## Cómo usarlo (PC Windows o Mac)
+1. Descarga el ZIP y **descomprímelo**.
+2. Entra a la carpeta `love_web_kit` y **doble clic** en cualquier `.html` para verlo en tu navegador.
+3. Para cambiar el texto *Te amo*, abre el archivo con el Bloc de Notas (Windows) o TextEdit (Mac), busca `Te amo` y escribe lo que quieras.
+4. Para cambiar el **código del candado**, abre `candado_amor.html` y en la línea:
+```
+const correctCombination = [1,0,0];
+```
+cambia los números.
+
+## Cómo usarlo (Android)
+1. Descarga el ZIP y **extrae** la carpeta.
+2. Abre el archivo `.html` con Chrome o tu navegador.
+
+## Cómo usarlo (iPhone/iPad)
+1. Descarga el ZIP.
+2. Abre **Archivos** → busca el ZIP → mantén pulsado → **Descomprimir**.
+3. Toca el `.html` y elige **Vista rápida** o **Abrir en Safari**.
+
+## Compartir por WhatsApp/Facebook
+- En PC: arrastra el archivo `.html` a un chat o súbelo a Drive/Dropbox y comparte el enlace.
+- En móvil: usa **Compartir** desde la app Archivos.
+
+¡Listo! Disfruta 🥰

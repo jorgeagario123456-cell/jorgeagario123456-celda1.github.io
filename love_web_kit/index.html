@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Candado de Amor</title>
+<style>
+  :root{
+    --bg:#ff9fb3;
+    --bg2:#ffb7c5;
+    --panel:#ff6f8a;
+    --panel-dark:#ff5476;
+    --txt:#ffeef2;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Color Emoji", "Apple Color Emoji", sans-serif;
+    min-height:100dvh;
+    display:grid;
+    place-items:center;
+    background:
+      radial-gradient(120vmax 120vmax at 0% 0%, #ffe4ec, #ffd3de 40%, #ffc3d2 60%, #ffb1c6),
+      repeating-conic-gradient(from 0deg, rgba(255,255,255,.6) 0 10deg, transparent 10deg 20deg);
+  }
+  .card{
+    width:min(92vmin, 600px);
+    padding:26px 22px 30px;
+    border-radius:26px;
+    background: linear-gradient(180deg, var(--bg2), var(--bg));
+    box-shadow:
+      inset 0 12px 20px rgba(255,255,255,.6),
+      inset 0 -12px 24px rgba(255,84,118,.35),
+      0 24px 60px rgba(255,84,118,.45);
+    text-align:center;
+  }
+  h1{margin:6px 0 20px; font-size: clamp(22px,6vw,40px); color:#b3123c}
+  .lock{
+    margin: 8px auto 12px;
+    width:min(80vmin, 420px);
+    background: linear-gradient(180deg, var(--panel), var(--panel-dark));
+    border-radius:22px;
+    padding:20px 16px 26px;
+    position:relative;
+    box-shadow:
+      inset 0 10px 18px rgba(255,255,255,.45),
+      inset 0 -12px 18px rgba(148,0,41,.25),
+      0 14px 30px rgba(148,0,41,.35);
+  }
+  .shackle{
+    position:absolute; left:50%; transform:translateX(-50%);
+    top:-80px; width:170px; height:120px; border:14px solid #ffd6df; border-bottom:none;
+    border-radius:90px 90px 0 0; box-shadow: inset 0 0 10px rgba(0,0,0,.18);
+    background:linear-gradient(180deg,#fff, #ffd6df);
+  }
+
+  .dials{
+    display:flex; gap:10px; justify-content:center; align-items:center;
+  }
+  .dial{
+    width:95px; background:#361624; color:#fff; border-radius:16px; padding:10px 6px;
+    box-shadow: inset 0 -40px 60px rgba(0,0,0,.35), inset 0 8px 14px rgba(255,255,255,.15);
+  }
+  .btn{all:unset; display:block; cursor:pointer; text-align:center; width:100%; font-size:28px; line-height:1; padding:2px 0}
+  .num{font-size:42px; margin:8px 0; letter-spacing:2px; font-weight:700; text-shadow:0 2px 0 rgba(0,0,0,.4)}
+  .status{margin-top:12px; color:#fff; font-weight:600}
+  .status.ok{ color:#ffe6f0; text-shadow: 0 0 12px #fff, 0 0 24px #ff7ea0 }
+  .hearts{position:fixed; inset:0; pointer-events:none; overflow:hidden}
+  .floating-heart{
+    position:absolute; font-size:18px; opacity:0; animation:pop 1.5s forwards;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,.2));
+  }
+  @keyframes pop{
+    0%{transform:translate(0,0) scale(.4); opacity:0}
+    15%{opacity:1}
+    75%{opacity:1}
+    100%{transform:translate(var(--dx), var(--dy)) scale(1.4); opacity:0}
+  }
+  footer{margin-top:10px; font-size:14px; opacity:.9}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Abre el Candado de Nuestro Amor</h1>
+  <div class="lock">
+    <div class="shackle"></div>
+    <div class="dials">
+      <div class="dial">
+        <button class="btn up">▲</button>
+        <div class="num" data-i="0">0</div>
+        <button class="btn down">▼</button>
+      </div>
+      <div class="dial">
+        <button class="btn up">▲</button>
+        <div class="num" data-i="1">0</div>
+        <button class="btn down">▼</button>
+      </div>
+      <div class="dial">
+        <button class="btn up">▲</button>
+        <div class="num" data-i="2">0</div>
+        <button class="btn down">▼</button>
+      </div>
+    </div>
+    <div class="status" id="status">Intenta de nuevo, mi amor</div>
+  </div>
+  <footer>Tip: cambia el código en el archivo si quieres otro número 💖</footer>
+</div>
+<div class="hearts" id="hearts"></div>
+
+<script>
+  const correctCombination = [2,2,2]; // <-- CAMBIA AQUÍ si quieres otro código
+  const nums = [...document.querySelectorAll('.num')];
+  const state = [0,0,0];
+  const statusEl = document.getElementById('status');
+
+  function render(){
+    nums.forEach((n,i)=> n.textContent = state[i]);
+  }
+  function check(){
+    if(state.join('') === correctCombination.join('')){
+      statusEl.textContent = '¡Nuestro amor!';
+      statusEl.classList.add('ok');
+      shower();
+      setTimeout(()=> location.href = 'sorpresa.html', 1200);
+    }else{
+      statusEl.textContent = 'Intenta de nuevo, mi amor';
+      statusEl.classList.remove('ok');
+    }
+  }
+  function shower(){
+    const box = document.getElementById('hearts');
+    for(let i=0;i<80;i++){
+      const s = document.createElement('span');
+      s.className='floating-heart';
+      s.textContent = ['❤','💖','💘','💝','💗'][Math.floor(Math.random()*5)];
+      const x = innerWidth/2 + (Math.random()*80-40);
+      const y = innerHeight/2 + (Math.random()*40-20);
+      s.style.left = x+'px'; s.style.top = y+'px';
+      const dx = (Math.random()*600-300)+'px';
+      const dy = (Math.random()*-400-120)+'px';
+      s.style.setProperty('--dx', dx);
+      s.style.setProperty('--dy', dy);
+      box.appendChild(s);
+      setTimeout(()=> box.removeChild(s), 1600);
+    }
+  }
+  document.querySelectorAll('.dial').forEach(dial => {
+    const i = +dial.querySelector('.num').dataset.i;
+    dial.querySelector('.up').addEventListener('click', ()=>{
+      state[i] = (state[i]+1)%10; render(); check();
+    });
+    dial.querySelector('.down').addEventListener('click', ()=>{
+      state[i] = (state[i]+9)%10; render(); check();
+    });
+  });
+  render(); check();
+</script>
+</body>
+</html>

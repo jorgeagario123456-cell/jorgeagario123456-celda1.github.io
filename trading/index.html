@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Laboratorio Oro y Euro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: banda superior con pestañas; cada vista es una columna de trabajo con panel de parámetros a la izquierda y resultados a la derecha. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --sunk:#e9edf2; --fg:#15202c; --muted:#596778; --line:#d9dfe6;
+  --gold:#9a6f0c; --gold-soft:#f4ead2; --euro:#2d5a87;
+  --good:#1d7549; --good-soft:#dcefe4; --bad:#b03535; --bad-soft:#f5dede; --warn:#9a6200; --warn-soft:#f6ead2;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e131a; --surface:#161d26; --sunk:#1d2631; --fg:#e4e9ef; --muted:#93a1b1; --line:#2a3542;
+  --gold:#dcb050; --gold-soft:#3a3020; --euro:#77a6d6;
+  --good:#52c48d; --good-soft:#173a2a; --bad:#ee7474; --bad-soft:#442222; --warn:#e6ad4e; --warn-soft:#3d3018; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131a; --surface:#161d26; --sunk:#1d2631; --fg:#e4e9ef; --muted:#93a1b1; --line:#2a3542;
+  --gold:#dcb050; --gold-soft:#3a3020; --euro:#77a6d6;
+  --good:#52c48d; --good-soft:#173a2a; --bad:#ee7474; --bad-soft:#442222; --warn:#e6ad4e; --warn-soft:#3d3018; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+header.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding-block:12px}
+.brand{font-family:var(--f-display);font-weight:800;font-size:19px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px}
+.brand .au{color:var(--gold)} .brand .eu{color:var(--euro)}
+.brand small{font-family:var(--f-mono);font-weight:400;font-size:11px;color:var(--muted);letter-spacing:.04em}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav.tabs a{font-weight:600;font-size:14px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:6px}
+nav.tabs a:hover{color:var(--fg);background:var(--sunk)}
+nav.tabs a[aria-current="page"]{color:var(--fg);background:var(--gold-soft);box-shadow:inset 0 -2px 0 var(--gold)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+main{padding-block:24px 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;letter-spacing:-.01em;margin:0}
+h1{font-size:30px;font-weight:800;line-height:1.15}
+h2{font-size:21px;font-weight:700}
+h3{font-size:16px;font-weight:700}
+p{margin:0}
+.lede{color:var(--muted);max-width:68ch}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.view{display:grid;gap:20px}
+.grid2{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;display:grid;gap:14px;min-width:0}
+.stack{display:grid;gap:14px;min-width:0}
+.field{display:grid;gap:4px}
+.field label,.lbl{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+input,select,textarea{font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%;min-width:0}
+input[type="number"],.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+input[type="checkbox"]{width:auto}
+.check{display:flex;gap:8px;align-items:center;font-size:14px}
+textarea{min-height:90px;font-family:var(--f-mono);font-size:12px}
+.hint{font-size:12px;color:var(--muted)}
+button{font:inherit;font-weight:600;font-size:14px;border-radius:6px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--sunk);color:var(--fg)}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--gold);border-color:var(--gold);color:var(--surface)}
+button.primary:hover{filter:brightness(1.07)}
+button.ghost{background:transparent}
+button.small{padding:4px 9px;font-size:12px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.drop{border:1.5px dashed var(--line);border-radius:8px;padding:14px;text-align:center;font-size:13px;color:var(--muted);cursor:pointer}
+.drop.over{border-color:var(--gold);background:var(--gold-soft)}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+.badge.sample{background:var(--warn-soft);color:var(--warn)}
+.badge.real{background:var(--good-soft);color:var(--good)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.kpi{background:var(--surface);padding:12px 14px;display:grid;gap:2px}
+.kpi .v{font-family:var(--f-mono);font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi .k{font-size:12px;color:var(--muted)}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.verdict{border-radius:8px;padding:14px 16px;display:grid;gap:10px;border:1px solid var(--line);background:var(--surface)}
+.verdict.ok{border-color:var(--good);background:var(--good-soft)}
+.verdict.mid{border-color:var(--warn);background:var(--warn-soft)}
+.verdict.no{border-color:var(--bad);background:var(--bad-soft)}
+.verdict .title{font-family:var(--f-display);font-weight:700;font-size:17px}
+.checks{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-size:12px;font-family:var(--f-mono);padding:3px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.pill.y{color:var(--good);border-color:var(--good)} .pill.n{color:var(--bad);border-color:var(--bad)}
+canvas{display:block;width:100%;height:240px}
+.tablebox{overflow-x:auto;max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface);position:sticky;top:0}
+td.num,th.num{text-align:right;font-family:var(--f-mono)}
+.bars{display:grid;gap:4px}
+.barrow{display:grid;grid-template-columns:56px minmax(0,1fr) 70px;gap:8px;align-items:center;font-size:12px;font-family:var(--f-mono)}
+.bartrack{position:relative;height:14px;background:var(--sunk);border-radius:3px}
+.bartrack i{position:absolute;top:0;bottom:0;border-radius:3px}
+.bartrack .mid{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--muted)}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.note{font-size:13px;padding:10px 12px;border-radius:6px;background:var(--sunk);color:var(--muted)}
+.note strong{color:var(--fg)}
+.err{color:var(--bad);font-size:13px}
+/* Plan */
+.plan{display:grid;gap:28px;max-width:900px}
+.plan section{display:grid;gap:12px}
+.plan p,.plan li{max-width:70ch}
+.plan ul,.plan ol{margin:0;padding-left:20px;display:grid;gap:6px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:10px;align-content:start}
+.rule .tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.rule.a .tag{color:var(--gold)} .rule.b .tag{color:var(--euro)}
+.rule ol{font-size:14px}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;counter-reset:s}
+.flow div{border-top:3px solid var(--gold);background:var(--surface);padding:12px 14px;border-radius:0 0 8px 8px;font-size:14px;display:grid;gap:4px}
+.flow b{font-family:var(--f-display)}
+.caveat{border-left:3px solid var(--bad);padding:10px 14px;background:var(--bad-soft);border-radius:0 6px 6px 0;font-size:14px;max-width:80ch}
+@media (max-width:520px){h1{font-size:25px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.row3{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span><span class="au">XAU</span>·<span class="eu">EUR</span> Lab</span><small>backtest + diario</small></div>
+    <nav class="tabs" aria-label="Secciones">
+      <a href="#backtest" data-v="backtest">Robot de backtest</a>
+      <a href="#diario" data-v="diario">Diario FXReplay</a>
+      <a href="#plan" data-v="plan">Plan de trading</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============ BACKTEST ============ -->
+<section class="view" id="v-backtest">
+  <div class="stack">
+    <span class="eyebrow">Robot de backtest</span>
+    <h1>Prueba las reglas sobre velas reales antes de arriesgar dinero</h1>
+    <p class="lede">Carga un CSV de velas (Dukascopy, MetaTrader o TradingView), elige la estrategia y el robot simula cada operación con spread, stop y objetivo. Los resultados dicen si el sistema tiene ventaja estadística.</p>
+  </div>
+  <div class="grid2">
+    <form class="panel" id="btForm" autocomplete="off" novalidate>
+      <div class="field">
+        <span class="lbl">Datos</span>
+        <div class="drop" id="drop" tabindex="0" role="button">Arrastra un CSV aquí o toca para elegirlo</div>
+        <input type="file" id="file" accept=".csv,.txt,text/csv" hidden>
+        <div id="dataInfo" class="hint"></div>
+        <div id="dataErr" class="err" hidden></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="inst">Instrumento</label>
+          <select id="inst">
+            <option value="XAUUSD">XAUUSD (oro)</option><option value="EURUSD">EURUSD</option>
+            <option value="GBPUSD">GBPUSD</option><option value="USDJPY">USDJPY</option><option value="AUDUSD">AUDUSD</option>
+          </select></div>
+        <div class="field"><label for="tz">Hora del CSV (UTC±)</label><input type="number" id="tz" value="0" step="1" min="-12" max="14"></div>
+      </div>
+      <div class="field"><label for="strat">Estrategia</label>
+        <select id="strat"><option value="arb">A · Ruptura del rango asiático</option><option value="tpb">B · Retroceso a la EMA en tendencia</option></select></div>
+      <div id="pARB" class="stack">
+        <div class="row2">
+          <div class="field"><label for="asiaS">Asia desde (UTC)</label><input type="number" id="asiaS" value="0" min="0" max="23"></div>
+          <div class="field"><label for="asiaE">hasta</label><input type="number" id="asiaE" value="7" min="0" max="24"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="trS">Entradas desde</label><input type="number" id="trS" value="7" min="0" max="23"></div>
+          <div class="field"><label for="trE">hasta</label><input type="number" id="trE" value="11" min="0" max="24"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="slMode">Stop</label>
+            <select id="slMode"><option value="medio">Mitad del rango</option><option value="opuesto">Lado opuesto</option><option value="atr">ATR × multiplicador</option></select></div>
+          <div class="field"><label for="maxR">Rango máx. (× ATR)</label><input type="number" id="maxR" value="14" step="1" min="1"></div>
+        </div>
+        <label class="check"><input type="checkbox" id="trend" checked> Solo a favor de la EMA 200</label>
+      </div>
+      <div id="pTPB" class="stack" hidden>
+        <div class="row2">
+          <div class="field"><label for="sesS">Sesión desde</label><input type="number" id="sesS" value="7" min="0" max="23"></div>
+          <div class="field"><label for="sesE">hasta</label><input type="number" id="sesE" value="17" min="0" max="24"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="ef">EMA rápida</label><input type="number" id="ef" value="20" min="2"></div>
+          <div class="field"><label for="em">EMA media</label><input type="number" id="em" value="50" min="2"></div>
+        </div>
+        <div class="field"><label for="mpd">Máx. operaciones por día</label><input type="number" id="mpd" value="2" min="1" max="10"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="rr">Objetivo (R)</label><input type="number" id="rr" value="2" step="0.25" min="0.5"></div>
+        <div class="field"><label for="atrM">ATR ×</label><input type="number" id="atrM" value="1.5" step="0.1" min="0.3"></div>
+        <div class="field"><label for="closeH">Cierre (UTC)</label><input type="number" id="closeH" value="20" min="1" max="24"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="cap">Capital $</label><input type="number" id="cap" value="10000" step="100" min="100"></div>
+        <div class="field"><label for="risk">Riesgo %</label><input type="number" id="risk" value="1" step="0.25" min="0.1" max="10"></div>
+        <div class="field"><label for="spread">Spread</label><input type="number" id="spread" value="0.25" step="any" min="0"></div>
+      </div>
+      <p class="hint" id="spreadHint">Spread en precio: 0.25 = 25 centavos por onza.</p>
+      <div class="field"><label for="period">Periodo de datos</label>
+        <select id="period"><option value="all">Todo</option><option value="train">Primer 70 % (para ajustar)</option><option value="test">Último 30 % (para validar)</option></select></div>
+      <button class="primary" type="submit">Ejecutar backtest</button>
+    </form>
+
+    <div class="stack" id="btOut">
+      <div class="btns" style="align-items:center"><span id="dataBadge" class="badge sample">Datos de ejemplo sintéticos</span><span class="hint" id="btMeta"></span></div>
+      <div class="kpis" id="btKpis"></div>
+      <div id="btVerdict"></div>
+      <div class="panel"><div class="btns" style="justify-content:space-between;align-items:baseline"><h3>Curva de capital</h3><span class="hint">Riesgo compuesto por operación</span></div><canvas id="btCurve"></canvas></div>
+      <div class="split">
+        <div class="panel"><h3>Resultado por mes</h3><div class="tablebox" style="max-height:300px"><table id="btMonths"></table></div></div>
+        <div class="panel"><h3>R por hora de entrada (UTC)</h3><div class="bars" id="btHours"></div></div>
+      </div>
+      <div class="panel"><div class="btns" style="justify-content:space-between;align-items:center"><h3>Operaciones simuladas</h3><button type="button" class="small" id="toJournal">Copiar al diario</button></div><div class="tablebox"><table id="btTrades"></table></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIARIO ============ -->
+<section class="view" id="v-diario" hidden>
+  <div class="stack">
+    <span class="eyebrow">Diario de operaciones</span>
+    <h1>Registra cada trade de FXReplay y mide si eres rentable</h1>
+    <p class="lede">Anota o importa las operaciones que haces en FXReplay, demo o real. El diario calcula tu R, factor de beneficio, drawdown y si estás respetando el plan. Los datos se guardan en este navegador.</p>
+  </div>
+  <div class="grid2">
+    <div class="stack">
+      <form class="panel" id="jForm" autocomplete="off">
+        <h3>Nueva operación</h3>
+        <div class="row2">
+          <div class="field"><label for="jDate">Fecha y hora</label><input type="datetime-local" id="jDate" required></div>
+          <div class="field"><label for="jSym">Activo</label><select id="jSym"><option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option><option>AUDUSD</option><option>Otro</option></select></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="jDir">Dirección</label><select id="jDir"><option value="1">Compra</option><option value="-1">Venta</option></select></div>
+          <div class="field"><label for="jSetup">Estrategia</label><select id="jSetup"><option value="A">A · Rango asiático</option><option value="B">B · Retroceso EMA</option><option value="Otra">Otra</option></select></div>
+        </div>
+        <div class="row3">
+          <div class="field"><label for="jEntry">Entrada</label><input type="number" id="jEntry" step="any"></div>
+          <div class="field"><label for="jSL">Stop</label><input type="number" id="jSL" step="any"></div>
+          <div class="field"><label for="jExit">Salida</label><input type="number" id="jExit" step="any"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="jR">Resultado R</label><input type="number" id="jR" step="any" placeholder="auto"></div>
+          <div class="field"><label for="jPnl">P/L $</label><input type="number" id="jPnl" step="any"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="jSrc">Cuenta</label><select id="jSrc"><option>FXReplay</option><option>Demo</option><option>Real</option></select></div>
+          <div class="field"><label for="jPlan">¿Seguiste el plan?</label><select id="jPlan"><option value="1">Sí</option><option value="0">No</option></select></div>
+        </div>
+        <div class="field"><label for="jNote">Notas</label><input type="text" id="jNote" placeholder="Motivo, emoción, error…"></div>
+        <button class="primary" type="submit">Guardar operación</button>
+      </form>
+      <div class="panel">
+        <h3>Calculadora de lotes</h3>
+        <div class="row2">
+          <div class="field"><label for="cBal">Balance $</label><input type="number" id="cBal" value="10000"></div>
+          <div class="field"><label for="cRisk">Riesgo %</label><input type="number" id="cRisk" value="1" step="0.25"></div>
+        </div>
+        <div class="row3">
+          <div class="field"><label for="cSym">Activo</label><select id="cSym"><option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option><option>AUDUSD</option></select></div>
+          <div class="field"><label for="cEntry">Entrada</label><input type="number" id="cEntry" value="2650" step="any"></div>
+          <div class="field"><label for="cSL">Stop</label><input type="number" id="cSL" value="2642" step="any"></div>
+        </div>
+        <div class="note" id="cOut"></div>
+      </div>
+      <div class="panel">
+        <h3>Importar / exportar</h3>
+        <p class="hint">Pega o carga un CSV con columnas como fecha, símbolo, tipo, entrada, stop, salida, profit o R. Sirve el historial exportado de FXReplay o MetaTrader.</p>
+        <div class="drop" id="jDrop" tabindex="0" role="button">Cargar CSV de operaciones</div>
+        <input type="file" id="jFile" accept=".csv,.txt,text/csv" hidden>
+        <div class="field"><label for="jRisk$">Riesgo por trade $ (para pasar P/L a R si falta)</label><input type="number" id="jRisk$" value="100"></div>
+        <div id="jImpMsg" class="hint"></div>
+        <div class="btns"><button type="button" id="jExport">Mostrar CSV</button><button type="button" class="ghost" id="jClear">Borrar todo</button></div>
+        <div id="jClearConfirm" class="note" hidden>¿Borrar todas las operaciones de este navegador? <div class="btns" style="margin-top:8px"><button type="button" class="small" id="jClearYes">Sí, borrar</button><button type="button" class="small ghost" id="jClearNo">Cancelar</button></div></div>
+        <div id="jExportBox" class="stack" hidden><textarea id="jCsv" readonly></textarea><button type="button" class="small" id="jCopy">Copiar</button></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div id="jSampleNote" class="note" hidden><strong>Estas operaciones son ejemplos</strong> para que veas cómo funciona. Desaparecen al guardar tu primera operación. <button type="button" class="small" id="jDropSamples">Quitar ejemplos</button></div>
+      <div class="btns"><div class="field" style="min-width:150px"><label for="jfSrc">Cuenta</label><select id="jfSrc"><option value="">Todas</option><option>FXReplay</option><option>Demo</option><option>Real</option></select></div>
+        <div class="field" style="min-width:150px"><label for="jfSym">Activo</label><select id="jfSym"><option value="">Todos</option><option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option><option>AUDUSD</option><option>Otro</option></select></div>
+        <div class="field" style="min-width:150px"><label for="jfSet">Estrategia</label><select id="jfSet"><option value="">Todas</option><option value="A">A</option><option value="B">B</option><option>Otra</option></select></div></div>
+      <div class="kpis" id="jKpis"></div>
+      <div id="jVerdict"></div>
+      <div class="panel"><h3>Curva en R</h3><canvas id="jCurve"></canvas></div>
+      <div class="split">
+        <div class="panel"><h3>Por estrategia y activo</h3><div class="tablebox" style="max-height:300px"><table id="jGroups"></table></div></div>
+        <div class="panel"><h3>Disciplina</h3><div id="jDisc" class="stack"></div></div>
+      </div>
+      <div class="panel"><h3>Operaciones</h3><div class="tablebox"><table id="jTable"></table></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLAN ============ -->
+<section class="view" id="v-plan" hidden>
+<div class="plan">
+  <div class="stack">
+    <span class="eyebrow">Plan de trading · horas en UTC</span>
+    <h1>Plan para operar oro y euro-dólar</h1>
+    <p class="lede">Dos estrategias intradía con reglas cerradas, un límite de riesgo fijo y una ruta de validación: backtest automático, práctica en FXReplay, demo y por último cuenta real pequeña.</p>
+  </div>
+
+  <section>
+    <h2>Cómo encaja FXReplay</h2>
+    <p>FXReplay es un simulador que reproduce el mercado vela a vela para que practiques a mano. No tiene una API pública, así que ningún robot puede leerlo ni operar dentro de él de forma automática sin violar sus términos. El flujo correcto reparte el trabajo así:</p>
+    <div class="flow">
+      <div><b>1 · Robot de backtest</b>Descarga velas M15 de Dukascopy o MetaTrader y ejecuta aquí las estrategias A y B en años de datos. Descarta lo que no tenga ventaja.</div>
+      <div><b>2 · FXReplay</b>Practica a mano solo la estrategia que pasó el backtest. Mínimo 100 operaciones por activo, siguiendo las reglas al pie de la letra.</div>
+      <div><b>3 · Diario</b>Anota o importa cada operación de FXReplay. El diario dice si tu ejecución manual reproduce los números del robot.</div>
+      <div><b>4 · Demo y real</b>Un mes en demo con los mismos límites. Si se mantiene, cuenta real con riesgo de 0.25–0.5 %.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Qué activos operar</h2>
+    <p>Prioriza liquidez y spread bajo. Con capital pequeño es mejor dominar dos activos que saltar entre diez.</p>
+    <div class="tablebox" style="max-height:none"><table>
+      <thead><tr><th>Activo</th><th>Spread típico</th><th>Mejor horario (UTC)</th><th>Comportamiento</th></tr></thead>
+      <tbody>
+        <tr><td><b>XAUUSD</b></td><td class="mono">$0.10–0.35</td><td class="mono">07–10 y 12–16</td><td>Muy direccional, recorridos grandes. Reacciona fuerte a CPI, NFP y FOMC.</td></tr>
+        <tr><td><b>EURUSD</b></td><td class="mono">0.1–1.0 pip</td><td class="mono">07–11 y 12–16</td><td>El par más líquido. Movimientos limpios y spread mínimo.</td></tr>
+        <tr><td>GBPUSD</td><td class="mono">0.3–1.5 pip</td><td class="mono">07–11</td><td>Más volátil que el euro, buenas rupturas en Londres.</td></tr>
+        <tr><td>USDJPY</td><td class="mono">0.2–1.2 pip</td><td class="mono">00–03 y 12–16</td><td>Tendencias largas, sensible a tipos de interés de EE. UU. y Japón.</td></tr>
+        <tr><td>AUDUSD</td><td class="mono">0.2–1.2 pip</td><td class="mono">00–06</td><td>Activo en la sesión asiática; ligado a materias primas y China.</td></tr>
+      </tbody></table></div>
+    <p class="hint">Sesiones aproximadas: Asia 00–07, Londres 07–16, Nueva York 12–21 en verano de EE. UU. y una hora más tarde en invierno.</p>
+  </section>
+
+  <section>
+    <h2>Las dos estrategias</h2>
+    <div class="rules">
+      <div class="rule a">
+        <span class="tag">Estrategia A · XAUUSD y EURUSD</span>
+        <h3>Ruptura del rango asiático</h3>
+        <ol>
+          <li>Marca el máximo y mínimo de las velas entre 00:00 y 07:00 UTC.</li>
+          <li>Entre 07:00 y 11:00, espera una vela M15 que cierre fuera del rango.</li>
+          <li>Opera solo si el precio está del mismo lado de la EMA 200 de M15.</li>
+          <li>Salta el día si el rango supera 14 veces el ATR(14) de M15.</li>
+          <li>Stop en la mitad del rango. Objetivo 2R.</li>
+          <li>Una operación por día. Cierra lo que siga abierto a las 20:00.</li>
+        </ol>
+      </div>
+      <div class="rule b">
+        <span class="tag">Estrategia B · todos los activos</span>
+        <h3>Retroceso a la EMA en tendencia</h3>
+        <ol>
+          <li>Tendencia alcista en M15: EMA 50 sobre EMA 200 y precio sobre la EMA 200. Al revés para ventas.</li>
+          <li>Espera que una vela toque la EMA 20 y cierre de vuelta a favor de la tendencia, con cuerpo en esa dirección.</li>
+          <li>Entra a la apertura de la siguiente vela, solo entre 07:00 y 17:00.</li>
+          <li>Stop a 1.5 × ATR(14). Objetivo 2R.</li>
+          <li>Máximo dos operaciones por día. Cierra todo a las 20:00.</li>
+        </ol>
+      </div>
+    </div>
+    <p class="note">Estas reglas son el punto de partida, no una promesa. Ejecuta el robot con tus datos, ajusta solo con el primer 70 % del histórico y confirma con el último 30 %. Si los números se derrumban en la validación, el ajuste estaba sobreoptimizado.</p>
+  </section>
+
+  <section>
+    <h2>Gestión del riesgo</h2>
+    <ul>
+      <li><b>Riesgo por operación:</b> 1 % en FXReplay y demo; 0.25–0.5 % en los primeros meses reales. Calcula el lote con la calculadora del diario, nunca a ojo.</li>
+      <li><b>Pérdida diaria máxima:</b> 2 % o dos stops seguidos. Al llegar, se apaga la plataforma hasta el día siguiente.</li>
+      <li><b>Pérdida semanal máxima:</b> 5 %. Al llegar, se revisa el diario antes de volver a operar.</li>
+      <li><b>Noticias:</b> no abras operaciones 15 minutos antes ni después de CPI, NFP, FOMC o BCE. El oro puede moverse $20–40 en segundos.</li>
+      <li><b>Nunca</b> muevas el stop en contra ni añadas a una posición perdedora.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Rutina diaria</h2>
+    <ol>
+      <li>Revisa el calendario económico y marca las noticias de alto impacto.</li>
+      <li>A las 07:00 UTC marca el rango asiático en XAUUSD y EURUSD y anota la posición frente a la EMA 200.</li>
+      <li>Opera solo las señales que cumplen todas las reglas. Si dudas, no hay operación.</li>
+      <li>Registra cada operación en el diario con captura y nota en menos de cinco minutos.</li>
+      <li>El viernes revisa la semana: R total, operaciones fuera de plan y la causa de cada error.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Cuándo pasar a dinero real</h2>
+    <p>El diario y el robot marcan en verde cada criterio. Avanza de fase solo cuando se cumplen todos:</p>
+    <ul>
+      <li>Al menos 100 operaciones registradas con la misma estrategia.</li>
+      <li>Factor de beneficio de 1.3 o más y expectativa de +0.15R o más por operación.</li>
+      <li>Drawdown máximo inferior al 15 % (o 10R en el diario).</li>
+      <li>90 % o más de las operaciones siguiendo el plan.</li>
+      <li>Resultados de FXReplay parecidos a los del backtest. Si tu ejecución manual rinde mucho peor, el problema es la disciplina, no la estrategia.</li>
+    </ul>
+  </section>
+
+  <p class="caveat">El trading con apalancamiento tiene alto riesgo: la mayoría de las cuentas minoristas de CFD y forex pierden dinero. Un backtest rentable no garantiza resultados futuros. Usa solo dinero que puedas permitirte perder.</p>
+</div>
+</section>
+</main>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const fmt=(x,d=2)=>Number.isFinite(x)?x.toLocaleString('es',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const sgn=(x,d=2)=>Number.isFinite(x)?(x>0?'+':'')+fmt(x,d):'–';
+const cls=x=>x>0?'pos':x<0?'neg':'';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const DAY=864e5, HOUR=36e5;
+const dstr=t=>{const d=new Date(t);return d.toISOString().slice(0,16).replace('T',' ')};
+
+/* ---------- vistas ---------- */
+const views=['backtest','diario','plan'];
+function route(){const v=views.includes(location.hash.slice(1))?location.hash.slice(1):'backtest';
+  views.forEach(n=>{$('#v-'+n).hidden=n!==v;document.querySelector(`nav a[data-v="${n}"]`).toggleAttribute('aria-current',n===v);if(n===v)document.querySelector(`nav a[data-v="${n}"]`).setAttribute('aria-current','page')});
+  requestAnimationFrame(redraw);}
+window.addEventListener('hashchange',route);
+
+/* ---------- datos de ejemplo (sintéticos) ---------- */
+function mulberry32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gauss(r){let u=0;while(!u)u=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r())}
+function sampleBars(){const r=mulberry32(11);let p=2620,trend=0;const out=[];const start=Date.UTC(2025,0,6);
+  for(let d=0;d<260;d++){const day=start+d*DAY;const wd=new Date(day).getUTCDay();if(wd===0||wd===6)continue;
+    trend=trend*0.9+gauss(r)*0.00004;
+    for(let k=0;k<96;k++){const hr=k/4;const vol=hr<7?0.0006:hr<12?0.0013:hr<17?0.0015:0.0007;
+      const o=p;const c=o*(1+trend+vol*gauss(r));
+      const h=Math.max(o,c)*(1+Math.abs(gauss(r))*vol*0.45),l=Math.min(o,c)*(1-Math.abs(gauss(r))*vol*0.45);
+      out.push({t:day+k*9e5,o,h,l,c});p=c;}}
+  return out;}
+
+/* ---------- lector CSV de velas ---------- */
+function splitRows(text){const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)throw new Error('El archivo está vacío.');
+  const f=lines[0];const delim=f.includes('\t')?'\t':(f.split(';').length>f.split(',').length?';':',');
+  return {delim,rows:lines.map(l=>l.split(delim).map(s=>s.trim().replace(/^"|"$/g,'')))};}
+function num(s,delim){if(s==null)return NaN;s=String(s).trim();if(delim===';')s=s.replace(',','.');return parseFloat(s)}
+function parseTime(s){s=String(s).trim();
+  if(/^\d+(\.\d+)?$/.test(s)){const n=+s;if(n>1e11)return{t:n,abs:true};if(n>1e8)return{t:n*1000,abs:true};return null}
+  let tzOff=null;const g=s.match(/(?:GMT|UTC)\s*([+-])(\d{2}):?(\d{2})$/i);
+  if(g){tzOff=(g[1]==='-'?-1:1)*(+g[2]*60+ +g[3]);s=s.slice(0,g.index).trim()}
+  else{const z=s.match(/(Z|[+-]\d{2}:\d{2})$/);if(z){const t=Date.parse(s);if(!isNaN(t))return{t,abs:true}}}
+  const m=s.match(/^(\d{1,4})[.\-\/](\d{1,2})[.\-\/](\d{1,4})(?:[ T]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);if(!m)return null;
+  let Y,M,D;if(m[1].length===4){Y=+m[1];M=+m[2];D=+m[3]}else{D=+m[1];M=+m[2];Y=+m[3];if(M>12){[D,M]=[M,D]}}
+  let t=Date.UTC(Y,M-1,D,+(m[4]||0),+(m[5]||0),+(m[6]||0));if(tzOff!=null)return{t:t-tzOff*6e4,abs:true};return{t,abs:false}}
+function parseBars(text,tzH){const {delim,rows}=splitRows(text);
+  let head=rows[0].map(h=>h.toLowerCase().replace(/[<>]/g,'').trim());const hasHead=head.some(h=>/^[a-záéíóú ()_\/]+$/.test(h));
+  let body=hasHead?rows.slice(1):rows;let ix={};
+  if(hasHead){const f=(...n)=>head.findIndex(h=>n.includes(h));
+    ix.o=f('open','apertura','abrir');ix.h=f('high','max','máximo','maximo','alto');ix.l=f('low','min','mínimo','minimo','bajo');ix.c=f('close','cierre','cerrar');
+    const date=f('date','fecha','day'),time=f('time','hora');
+    if(date>=0&&time>=0&&date!==time&&!/[:]/.test(body[0][date])&&/:/.test(body[0][time])){ix.d=date;ix.tm=time}
+    else ix.d=f('gmt time','local time','datetime','timestamp','time (utc)','date time','date','time','fecha','hora');
+  }else{const two=/:/.test(body[0][1]||'')&&!/[.\-\/]/.test(body[0][1]);ix=two?{d:0,tm:1,o:2,h:3,l:4,c:5}:{d:0,o:1,h:2,l:3,c:4}}
+  if([ix.d,ix.o,ix.h,ix.l,ix.c].some(v=>v==null||v<0))throw new Error('No encuentro columnas de fecha, open, high, low y close.');
+  const out=[];for(const r of body){const ts=parseTime(ix.tm!=null?r[ix.d]+' '+r[ix.tm]:r[ix.d]);if(!ts)continue;
+    const b={t:ts.abs?ts.t:ts.t-tzH*HOUR,o:num(r[ix.o],delim),h:num(r[ix.h],delim),l:num(r[ix.l],delim),c:num(r[ix.c],delim)};
+    if([b.o,b.h,b.l,b.c].some(v=>!Number.isFinite(v)))continue;if(b.h===b.l&&b.o===b.c)continue;out.push(b)}
+  if(out.length<300)throw new Error(`Solo leí ${out.length} velas válidas. Necesito al menos 300 (idealmente meses de M15).`);
+  out.sort((a,b)=>a.t-b.t);return out;}
+function tfLabel(bars){const d=[];for(let i=1;i<Math.min(bars.length,500);i++)d.push(bars[i].t-bars[i-1].t);d.sort((a,b)=>a-b);const m=d[d.length>>1]/6e4;
+  return m<60?`M${m}`:m<1440?`H${m/60}`:'D1'}
+
+/* ---------- indicadores y motor ---------- */
+function ema(a,n){const k=2/(n+1),o=new Array(a.length);let e=a[0];for(let i=0;i<a.length;i++){e=i?a[i]*k+e*(1-k):a[i];o[i]=e}return o}
+function atr(b,n){const o=new Array(b.length);let a=null;for(let i=0;i<b.length;i++){const pc=i?b[i-1].c:b[i].c;const tr=Math.max(b[i].h-b[i].l,Math.abs(b[i].h-pc),Math.abs(b[i].l-pc));a=a==null?tr:(a*(n-1)+tr)/n;o[i]=a}return o}
+function backtest(bars,p){
+  const C=bars.map(b=>b.c),eF=ema(C,p.ef),eM=ema(C,p.em),eS=ema(C,200),A=atr(bars,14);
+  const trades=[];let pos=null,pend=null,day=-1,hi=-Infinity,lo=Infinity,traded=false,todayN=0,eq=p.cap;
+  const curve=[{t:bars[0].t,v:eq}];
+  for(let i=0;i<bars.length;i++){const b=bars[i];const d=Math.floor(b.t/DAY),hr=(b.t%DAY)/HOUR;
+    if(d!==day){day=d;hi=-Infinity;lo=Infinity;traded=false;todayN=0;if(pend&&pend.day!==d)pend=null}
+    if(pend){const entry=b.o+pend.dir*p.spread;const rd=(entry-pend.sl)*pend.dir;
+      if(rd>0){pos={dir:pend.dir,entry,sl:pend.sl,tp:entry+pend.dir*p.rr*rd,rd,t:b.t,i,amt:eq*p.risk/100};todayN++}pend=null}
+    if(pos){let x=null,why='';const last=i===bars.length-1||Math.floor(bars[i+1].t/DAY)!==d;
+      if(pos.dir>0){if(b.l<=pos.sl){x=i>pos.i?Math.min(pos.sl,b.o):pos.sl;why='Stop'}else if(b.h>=pos.tp){x=pos.tp;why='Objetivo'}}
+      else{if(b.h>=pos.sl){x=i>pos.i?Math.max(pos.sl,b.o):pos.sl;why='Stop'}else if(b.l<=pos.tp){x=pos.tp;why='Objetivo'}}
+      if(x==null&&(hr+0.0001>=p.closeH||last)){x=b.c;why='Hora'}
+      if(x!=null){const r=(x-pos.entry)*pos.dir/pos.rd,pnl=r*pos.amt;eq+=pnl;
+        trades.push({t:pos.t,tx:b.t,dir:pos.dir,entry:pos.entry,sl:pos.sl,tp:pos.tp,exit:x,r,pnl,why,eq});curve.push({t:b.t,v:eq});pos=null}}
+    if(hr>=p.asiaS&&hr<p.asiaE){if(b.h>hi)hi=b.h;if(b.l<lo)lo=b.l}
+    if(!pos&&!pend&&i>=210&&i<bars.length-1&&hr<p.closeH-0.25){let s=null;
+      if(p.strat==='arb'){if(!traded&&hr>=p.trS&&hr<p.trE&&hi>lo){const rg=hi-lo;
+        if(rg<=p.maxR*A[i]){if(b.c>hi&&(!p.trend||b.c>eS[i]))s={dir:1};else if(b.c<lo&&(!p.trend||b.c<eS[i]))s={dir:-1}}
+        if(s){s.sl=p.slMode==='opuesto'?(s.dir>0?lo:hi):p.slMode==='medio'?(hi+lo)/2:b.c-s.dir*p.atrM*A[i];traded=true}}}
+      else if(todayN<p.mpd&&hr>=p.sesS&&hr<p.sesE){
+        if(eM[i]>eS[i]&&b.c>eS[i]&&b.l<=eF[i]&&b.c>eF[i]&&b.c>b.o)s={dir:1,sl:b.c-p.atrM*A[i]};
+        else if(eM[i]<eS[i]&&b.c<eS[i]&&b.h>=eF[i]&&b.c<eF[i]&&b.c<b.o)s={dir:-1,sl:b.c+p.atrM*A[i]}}
+      if(s){s.day=d;pend=s}}}
+  return{trades,curve,eq};}
+
+/* ---------- estadísticas ---------- */
+function stats(tr){const n=tr.length;let gw=0,gl=0,w=0,cum=0,peak=0,dd=0,ls=0,cur=0;const mon={},hrs={};
+  for(const t of tr){const r=t.r;if(r>0){gw+=r;w++;cur=0}else{gl-=r;if(r<0){cur++;ls=Math.max(ls,cur)}}
+    cum+=r;peak=Math.max(peak,cum);dd=Math.max(dd,peak-cum);
+    const k=new Date(t.t).toISOString().slice(0,7);(mon[k]=mon[k]||{n:0,r:0,pnl:0}).n++;mon[k].r+=r;mon[k].pnl+=t.pnl||0;
+    const h=new Date(t.t).getUTCHours();(hrs[h]=hrs[h]||{n:0,r:0}).n++;hrs[h].r+=r;}
+  const L=n-w;return{n,w,wr:n?w/n:NaN,pf:gl?gw/gl:(gw?Infinity:NaN),exp:n?cum/n:NaN,totR:cum,ddR:dd,ls,avgW:w?gw/w:NaN,avgL:L?-gl/L:NaN,mon,hrs}}
+function curveDD(c){let pk=c[0].v,dd=0;for(const p of c){pk=Math.max(pk,p.v);dd=Math.max(dd,(pk-p.v)/pk)}return dd}
+function monteCarlo(rs,risk,runs=1000){if(rs.length<5)return null;const r=mulberry32(3);const dds=[],ends=[];
+  for(let k=0;k<runs;k++){let e=1,pk=1,dd=0;for(let j=0;j<rs.length;j++){e*=1+rs[(r()*rs.length)|0]*risk;pk=Math.max(pk,e);dd=Math.max(dd,(pk-e)/pk)}dds.push(dd);ends.push(e)}
+  dds.sort((a,b)=>a-b);return{dd95:dds[Math.floor(runs*.95)],pWin:ends.filter(e=>e>1).length/runs}}
+function verdict(el,checks,s){const pass=checks.filter(c=>c.ok).length;let k='mid',t='Resultado dudoso: falta muestra o ventaja',d='Cumple parte de los criterios. Junta más operaciones o ajusta usando solo el periodo de entrenamiento y valida en el resto.';
+  if(!s.n){el.innerHTML='<div class="verdict"><div class="title">Sin operaciones</div><p>Con estos parámetros no hubo señales. Revisa el horario del CSV o amplía las ventanas.</p></div>';return}
+  if(s.pf<1||s.exp<=0){k='no';t='No rentable con estos parámetros';d='La expectativa es negativa: a largo plazo este sistema pierde dinero. No lo lleves a FXReplay ni a real así.'}
+  else if(pass===checks.length){k='ok';t='Ventaja estadística: pasa a la siguiente fase';d='Cumple todos los criterios. Confírmalo en el periodo de validación y después practícalo en FXReplay.'}
+  el.innerHTML=`<div class="verdict ${k}"><div class="title">${t}</div><p>${d}</p>${el.id==='btVerdict'&&SAMPLE?'<p><strong>Ojo:</strong> estos datos son sintéticos y solo muestran cómo funciona el robot. El veredicto vale únicamente con velas reales.</p>':''}<div class="checks">${checks.map(c=>`<span class="pill ${c.ok?'y':'n'}">${c.ok?'✓':'✗'} ${c.label}</span>`).join('')}</div></div>`}
+function kpis(el,items){el.innerHTML=items.map(([k,v,c])=>`<div class="kpi"><span class="k">${k}</span><span class="v ${c||''}">${v}</span></div>`).join('')}
+function hourBars(el,hrs){const ks=Object.keys(hrs).map(Number).sort((a,b)=>a-b);if(!ks.length){el.innerHTML='<p class="hint">Sin datos.</p>';return}
+  const mx=Math.max(...ks.map(k=>Math.abs(hrs[k].r)))||1;
+  el.innerHTML=ks.map(k=>{const r=hrs[k].r,w=Math.abs(r)/mx*50;const st=r>=0?`left:50%;width:${w}%;background:var(--good)`:`right:50%;width:${w}%;background:var(--bad)`;
+    return`<div class="barrow"><span>${String(k).padStart(2,'0')}:00</span><div class="bartrack"><span class="mid"></span><i style="${st}"></i></div><span class="${cls(r)}" style="text-align:right">${sgn(r,1)}R</span></div>`}).join('')}
+
+/* ---------- gráfico ---------- */
+const charts={};
+function lineChart(id,pts,fy,base){charts[id]={pts,fy,base};drawChart(id)}
+function drawChart(id){const c=$('#'+id),cfg=charts[id];if(!c||!cfg||!c.offsetWidth)return;const {pts,fy,base}=cfg;
+  const css=getComputedStyle(document.documentElement),col=n=>css.getPropertyValue(n).trim();
+  const dpr=window.devicePixelRatio||1,W=c.offsetWidth,H=c.offsetHeight;c.width=W*dpr;c.height=H*dpr;const g=c.getContext('2d');g.scale(dpr,dpr);g.clearRect(0,0,W,H);
+  if(pts.length<2){g.fillStyle=col('--muted');g.font='13px '+col('--f-body');g.fillText('Sin operaciones suficientes para dibujar.',12,24);return}
+  const pl=64,pr=12,pt=10,pb=24;let mn=Math.min(base,...pts.map(p=>p.v)),mx=Math.max(base,...pts.map(p=>p.v));if(mx===mn){mx+=1;mn-=1}const pad=(mx-mn)*.06;mn-=pad;mx+=pad;
+  const x=i=>pl+(W-pl-pr)*i/(pts.length-1),y=v=>pt+(H-pt-pb)*(1-(v-mn)/(mx-mn));
+  g.font='11px '+col('--f-mono');g.fillStyle=col('--muted');g.strokeStyle=col('--line');g.lineWidth=1;g.textAlign='right';g.textBaseline='middle';
+  for(let k=0;k<=4;k++){const v=mn+(mx-mn)*k/4,yy=Math.round(y(v))+.5;g.beginPath();g.moveTo(pl,yy);g.lineTo(W-pr,yy);g.stroke();g.fillText(fy(v),pl-6,yy)}
+  g.textAlign='center';g.textBaseline='top';const fd=t=>new Date(t).toISOString().slice(0,7);
+  [0,Math.floor((pts.length-1)/2),pts.length-1].forEach((i,j)=>{g.textAlign=['left','center','right'][j];g.fillText(fd(pts[i].t),x(i),H-pb+6)});
+  g.setLineDash([3,3]);g.strokeStyle=col('--muted');g.beginPath();g.moveTo(pl,y(base));g.lineTo(W-pr,y(base));g.stroke();g.setLineDash([]);
+  const up=pts[pts.length-1].v>=base,lc=up?col('--good'):col('--bad');
+  g.beginPath();pts.forEach((p,i)=>i?g.lineTo(x(i),y(p.v)):g.moveTo(x(i),y(p.v)));g.lineTo(x(pts.length-1),y(base));g.lineTo(x(0),y(base));g.closePath();g.globalAlpha=.13;g.fillStyle=lc;g.fill();g.globalAlpha=1;
+  g.beginPath();pts.forEach((p,i)=>i?g.lineTo(x(i),y(p.v)):g.moveTo(x(i),y(p.v)));g.strokeStyle=lc;g.lineWidth=2;g.stroke();
+  const lx=x(pts.length-1),ly=y(pts[pts.length-1].v);g.beginPath();g.arc(lx,ly,3.5,0,7);g.fillStyle=lc;g.fill();}
+function redraw(){Object.keys(charts).forEach(drawChart)}
+window.addEventListener('resize',redraw);
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw)}catch(e){}
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* ---------- backtest UI ---------- */
+const SPREAD={XAUUSD:[0.25,'0.25 = 25 centavos por onza'],EURUSD:[0.0001,'0.0001 = 1 pip'],GBPUSD:[0.00015,'0.00015 = 1.5 pips'],USDJPY:[0.012,'0.012 = 1.2 pips'],AUDUSD:[0.00012,'0.00012 = 1.2 pips']};
+let BARS=sampleBars(),SAMPLE=true,LAST=null;
+const f=$('#btForm');
+$('#strat').addEventListener('change',()=>{const a=$('#strat').value==='arb';$('#pARB').hidden=!a;$('#pTPB').hidden=a});
+$('#inst').addEventListener('change',()=>{const [v,h]=SPREAD[$('#inst').value];$('#spread').value=v;$('#spreadHint').textContent='Spread en precio: '+h+'.'});
+function params(){const g=id=>+$('#'+id).value;return{strat:$('#strat').value,asiaS:g('asiaS'),asiaE:g('asiaE'),trS:g('trS'),trE:g('trE'),slMode:$('#slMode').value,maxR:g('maxR'),trend:$('#trend').checked,
+  sesS:g('sesS'),sesE:g('sesE'),ef:g('ef'),em:g('em'),mpd:g('mpd'),rr:g('rr'),atrM:g('atrM'),closeH:g('closeH'),cap:g('cap'),risk:g('risk'),spread:g('spread')}}
+function dataInfo(){$('#dataInfo').textContent=`${BARS.length.toLocaleString('es')} velas ${tfLabel(BARS)} · ${dstr(BARS[0].t).slice(0,10)} → ${dstr(BARS[BARS.length-1].t).slice(0,10)} (UTC)`;
+  const b=$('#dataBadge');b.className='badge '+(SAMPLE?'sample':'real');b.textContent=SAMPLE?'Datos de ejemplo sintéticos · carga tu CSV para resultados reales':'Datos cargados: '+$('#inst').value}
+function run(){const p=params();let bars=BARS;const cut=Math.floor(BARS.length*.7);
+  if($('#period').value==='train')bars=BARS.slice(0,cut);else if($('#period').value==='test')bars=BARS.slice(Math.max(0,cut-250));
+  const res=backtest(bars,p);LAST={res,p};const s=stats(res.trades),dd=curveDD(res.curve),net=(res.eq/p.cap-1),mc=monteCarlo(res.trades.map(t=>t.r),p.risk/100);
+  $('#btMeta').textContent=`${p.strat==='arb'?'Estrategia A':'Estrategia B'} · ${dstr(bars[0].t).slice(0,10)} → ${dstr(bars[bars.length-1].t).slice(0,10)}`;
+  kpis($('#btKpis'),[['Resultado neto',sgn(net*100,1)+' %',cls(net)],['Operaciones',s.n],['Acierto',fmt(s.wr*100,1)+' %'],['Factor de beneficio',s.pf===Infinity?'∞':fmt(s.pf),s.pf>=1?'pos':'neg'],
+    ['Expectativa',sgn(s.exp)+' R',cls(s.exp)],['Drawdown máx.',fmt(dd*100,1)+' %',dd>.15?'neg':''],['Racha perdedora',s.ls],['DD 95 % Monte Carlo',mc?fmt(mc.dd95*100,1)+' %':'–']]);
+  verdict($('#btVerdict'),[{label:'≥ 100 operaciones',ok:s.n>=100},{label:'Factor ≥ 1.3',ok:s.pf>=1.3},{label:'Expectativa ≥ 0.15R',ok:s.exp>=.15},{label:'Drawdown ≤ 15 %',ok:dd<=.15},{label:'Prob. de ganar ≥ 80 % (MC)',ok:mc&&mc.pWin>=.8}],s);
+  lineChart('btCurve',res.curve,v=>'$'+Math.round(v).toLocaleString('es'),p.cap);
+  const ms=Object.keys(s.mon).sort();
+  $('#btMonths').innerHTML='<thead><tr><th>Mes</th><th class="num">Trades</th><th class="num">R</th><th class="num">$</th></tr></thead><tbody>'+ms.map(m=>`<tr><td>${m}</td><td class="num">${s.mon[m].n}</td><td class="num ${cls(s.mon[m].r)}">${sgn(s.mon[m].r,1)}</td><td class="num ${cls(s.mon[m].pnl)}">${sgn(s.mon[m].pnl,0)}</td></tr>`).join('')+'</tbody>';
+  hourBars($('#btHours'),s.hrs);
+  const dg=p.spread<0.01?5:p.spread<1?3:2;const tr=res.trades.slice(-300).reverse();
+  $('#btTrades').innerHTML='<thead><tr><th>Entrada (UTC)</th><th>Lado</th><th class="num">Precio</th><th class="num">Stop</th><th class="num">Salida</th><th>Motivo</th><th class="num">R</th><th class="num">$</th></tr></thead><tbody>'+
+    tr.map(t=>`<tr><td>${dstr(t.t)}</td><td>${t.dir>0?'Compra':'Venta'}</td><td class="num">${fmt(t.entry,dg)}</td><td class="num">${fmt(t.sl,dg)}</td><td class="num">${fmt(t.exit,dg)}</td><td>${t.why}</td><td class="num ${cls(t.r)}">${sgn(t.r)}</td><td class="num ${cls(t.pnl)}">${sgn(t.pnl,0)}</td></tr>`).join('')+'</tbody>'+(res.trades.length>300?`<caption class="hint" style="caption-side:bottom;padding:8px">Se muestran las últimas 300 de ${res.trades.length}.</caption>`:'');}
+f.addEventListener('submit',e=>{e.preventDefault();run()});
+function loadFile(file){const rd=new FileReader();rd.onload=()=>{$('#dataErr').hidden=true;try{BARS=parseBars(rd.result,+$('#tz').value);SAMPLE=false;dataInfo();run()}catch(err){$('#dataErr').textContent=err.message;$('#dataErr').hidden=false}};rd.readAsText(file)}
+function dropZone(zone,input,cb){zone.addEventListener('click',()=>input.click());zone.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click()}});
+  input.addEventListener('change',()=>{if(input.files[0])cb(input.files[0]);input.value=''});
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over')});zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('over');if(e.dataTransfer.files[0])cb(e.dataTransfer.files[0])})}
+dropZone($('#drop'),$('#file'),loadFile);
+
+/* ---------- diario ---------- */
+const JK='xaueur.diario.v1';
+function sampleJournal(){const r=mulberry32(5),out=[];const base=Date.UTC(2026,9,1,7);const syms=['XAUUSD','EURUSD'];
+  for(let i=0;i<24;i++){const win=r()<.45,rr=win?(r()<.75?2:1+r()):(r()<.85?-1:-.4-r()*.4);const plan=r()<.85||win;
+    out.push({id:'ej'+i,ej:true,t:base+Math.floor(i/1.6)*DAY+Math.floor(r()*6)*HOUR,sym:syms[i%2],dir:r()<.5?1:-1,setup:r()<.6?'A':'B',r:+(plan?rr:rr-.3).toFixed(2),pnl:Math.round((plan?rr:rr-.3)*100),src:'FXReplay',plan,note:plan?'':'Entré antes del cierre de vela'})}
+  return out}
+let J=store.get(JK,null);if(!Array.isArray(J))J=sampleJournal();
+const saveJ=()=>store.set(JK,J);
+function nowLocal(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+$('#jDate').value=nowLocal();
+function autoR(){const e=+$('#jEntry').value,s=+$('#jSL').value,x=+$('#jExit').value,dir=+$('#jDir').value;
+  if($('#jEntry').value&&$('#jSL').value&&$('#jExit').value&&e!==s){$('#jR').placeholder=fmt((x-e)*dir/((e-s)*dir))}else $('#jR').placeholder='auto'}
+['jEntry','jSL','jExit','jDir'].forEach(id=>$('#'+id).addEventListener('input',autoR));
+$('#jForm').addEventListener('submit',e=>{e.preventDefault();const dir=+$('#jDir').value,en=+$('#jEntry').value,sl=+$('#jSL').value,ex=+$('#jExit').value;
+  let r=$('#jR').value!==''?+$('#jR').value:($('#jEntry').value&&$('#jSL').value&&$('#jExit').value&&en!==sl?(ex-en)*dir/((en-sl)*dir):NaN);
+  const pnl=$('#jPnl').value!==''?+$('#jPnl').value:null;if(!Number.isFinite(r)&&pnl!=null)r=pnl/(+$('#jRisk$').value||100);
+  if(!Number.isFinite(r)){$('#jR').focus();$('#jR').placeholder='Falta: R o entrada/stop/salida';return}
+  if(J.some(t=>t.ej))J=J.filter(t=>!t.ej);
+  J.push({id:Date.now().toString(36),t:new Date($('#jDate').value).getTime(),sym:$('#jSym').value,dir,setup:$('#jSetup').value,entry:en||null,sl:sl||null,exit:ex||null,r:+r.toFixed(3),pnl,src:$('#jSrc').value,plan:$('#jPlan').value==='1',note:$('#jNote').value.trim()});
+  saveJ();['jEntry','jSL','jExit','jR','jPnl','jNote'].forEach(id=>$('#'+id).value='');autoR();renderJ()});
+['jfSrc','jfSym','jfSet'].forEach(id=>$('#'+id).addEventListener('change',renderJ));
+function renderJ(){const fs=$('#jfSrc').value,fy=$('#jfSym').value,fe=$('#jfSet').value;
+  const tr=J.filter(t=>(!fs||t.src===fs)&&(!fy||t.sym===fy)&&(!fe||t.setup===fe)).sort((a,b)=>a.t-b.t);
+  $('#jSampleNote').hidden=!J.some(t=>t.ej);
+  const s=stats(tr),pnl=tr.reduce((a,t)=>a+(t.pnl||0),0),pl=tr.filter(t=>t.plan),np=tr.filter(t=>!t.plan),comp=tr.length?pl.length/tr.length:NaN;
+  kpis($('#jKpis'),[['Operaciones',s.n],['Acierto',fmt(s.wr*100,1)+' %'],['Total',sgn(s.totR,1)+' R',cls(s.totR)],['P/L registrado',sgn(pnl,0)+' $',cls(pnl)],
+    ['Factor de beneficio',s.pf===Infinity?'∞':fmt(s.pf),s.pf>=1?'pos':'neg'],['Expectativa',sgn(s.exp)+' R',cls(s.exp)],['Drawdown máx.',fmt(s.ddR,1)+' R',s.ddR>10?'neg':''],['Racha perdedora',s.ls]]);
+  verdict($('#jVerdict'),[{label:'≥ 100 operaciones',ok:s.n>=100},{label:'Factor ≥ 1.3',ok:s.pf>=1.3},{label:'Expectativa ≥ 0.15R',ok:s.exp>=.15},{label:'Drawdown ≤ 10R',ok:s.ddR<=10},{label:'Plan ≥ 90 %',ok:comp>=.9}],s);
+  let c=0;lineChart('jCurve',[{t:tr[0]?.t||0,v:0},...tr.map(t=>({t:t.t,v:c+=t.r}))],v=>fmt(v,1)+'R',0);
+  const grp={};tr.forEach(t=>{const k=(t.setup==='A'||t.setup==='B'?'Estrategia '+t.setup:t.setup)+' · '+t.sym;(grp[k]=grp[k]||[]).push(t)});
+  $('#jGroups').innerHTML='<thead><tr><th>Grupo</th><th class="num">N</th><th class="num">Acierto</th><th class="num">Exp.</th><th class="num">Total R</th></tr></thead><tbody>'+
+    Object.keys(grp).sort().map(k=>{const g=stats(grp[k]);return`<tr><td>${esc(k)}</td><td class="num">${g.n}</td><td class="num">${fmt(g.wr*100,0)} %</td><td class="num ${cls(g.exp)}">${sgn(g.exp)}</td><td class="num ${cls(g.totR)}">${sgn(g.totR,1)}</td></tr>`}).join('')+'</tbody>';
+  const sp=stats(pl),sn=stats(np);
+  $('#jDisc').innerHTML=`<div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))"><div class="kpi"><span class="k">Siguiendo el plan</span><span class="v">${fmt(comp*100,0)} %</span></div><div class="kpi"><span class="k">Exp. con plan</span><span class="v ${cls(sp.exp)}">${sgn(sp.exp)} R</span></div><div class="kpi"><span class="k">Exp. fuera de plan</span><span class="v ${cls(sn.exp)}">${np.length?sgn(sn.exp)+' R':'–'}</span></div></div>
+    <p class="hint">${np.length?`Las ${np.length} operaciones fuera de plan suman ${sgn(sn.totR,1)}R. ${sn.totR<0?'Eliminarlas mejoraría tu resultado.':''}`:'Todas las operaciones siguen el plan.'}</p>`;
+  $('#jTable').innerHTML='<thead><tr><th>Fecha</th><th>Activo</th><th>Lado</th><th>Est.</th><th class="num">R</th><th class="num">$</th><th>Plan</th><th>Cuenta</th><th>Notas</th><th></th></tr></thead><tbody>'+
+    tr.slice().reverse().map(t=>`<tr><td>${new Date(t.t).toLocaleString('es',{dateStyle:'short',timeStyle:'short'})}</td><td>${esc(t.sym)}</td><td>${t.dir>0?'Compra':'Venta'}</td><td>${esc(t.setup)}</td><td class="num ${cls(t.r)}">${sgn(t.r)}</td><td class="num ${cls(t.pnl)}">${t.pnl!=null?sgn(t.pnl,0):'–'}</td><td>${t.plan?'Sí':'<span class="neg">No</span>'}</td><td>${esc(t.src)}${t.ej?' <span class="badge sample">ejemplo</span>':''}</td><td style="white-space:normal;min-width:160px">${esc(t.note)}</td><td><button type="button" class="small ghost" data-del="${esc(t.id)}" aria-label="Borrar operación">Borrar</button></td></tr>`).join('')+'</tbody>';}
+$('#jTable').addEventListener('click',e=>{const id=e.target.dataset?.del;if(!id)return;J=J.filter(t=>t.id!==id);saveJ();renderJ()});
+$('#jDropSamples').addEventListener('click',()=>{J=J.filter(t=>!t.ej);saveJ();renderJ()});
+$('#jClear').addEventListener('click',()=>$('#jClearConfirm').hidden=false);
+$('#jClearNo').addEventListener('click',()=>$('#jClearConfirm').hidden=true);
+$('#jClearYes').addEventListener('click',()=>{J=[];saveJ();$('#jClearConfirm').hidden=true;renderJ()});
+const CSVH=['fecha_utc','activo','direccion','estrategia','entrada','stop','salida','r','pnl','cuenta','plan','notas'];
+$('#jExport').addEventListener('click',()=>{const q=v=>{v=String(v??'');return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  $('#jCsv').value=[CSVH.join(','),...J.filter(t=>!t.ej).map(t=>[new Date(t.t).toISOString(),t.sym,t.dir>0?'buy':'sell',t.setup,t.entry,t.sl,t.exit,t.r,t.pnl,t.src,t.plan?'si':'no',t.note].map(q).join(','))].join('\n');$('#jExportBox').hidden=false});
+$('#jCopy').addEventListener('click',()=>{const ta=$('#jCsv');navigator.clipboard.writeText(ta.value).then(()=>$('#jCopy').textContent='Copiado',()=>{ta.select()})});
+function importJ(text){const {delim,rows}=splitRows(text);const h=rows[0].map(x=>x.toLowerCase().replace(/[<>]/g,'').trim());
+  const f=(...n)=>h.findIndex(x=>n.some(k=>x===k));const ix={t:f('fecha_utc','open time','opentime','entry time','time','date','fecha','open date','fecha apertura'),sym:f('activo','symbol','instrument','pair','símbolo','simbolo','par','market'),
+    dir:f('direccion','dirección','side','type','direction','tipo','position'),setup:f('estrategia','setup','strategy','tag','tags'),entry:f('entrada','entry','entry price','open price','price','precio apertura'),
+    sl:f('stop','sl','stop loss','s/l','stoploss'),exit:f('salida','exit','exit price','close price','precio cierre'),r:f('r','r multiple','rr','r-multiple','resultado r'),pnl:f('pnl','profit','p/l','net profit','resultado','ganancia','net p/l','realized pnl'),
+    src:f('cuenta','account'),plan:f('plan'),note:f('notas','notes','comment','comentario')};
+  if(ix.t<0||(ix.r<0&&ix.pnl<0&&ix.exit<0))throw new Error('Necesito al menos una columna de fecha y otra de profit, R o precio de salida.');
+  const risk=+$('#jRisk$').value||100;let ok=0,bad=0;const add=[];
+  rows.slice(1).forEach((r,k)=>{const ts=parseTime(r[ix.t]);const g=i=>i>=0?r[i]:'';const n=i=>i>=0&&r[i]!==''?num(r[i],delim):NaN;
+    const ds=g(ix.dir).toLowerCase();const dir=/sell|short|venta|vender|-1/.test(ds)?-1:1;const en=n(ix.entry),sl=n(ix.sl),ex=n(ix.exit),pnl=n(ix.pnl);
+    let R=n(ix.r);if(!Number.isFinite(R)&&[en,sl,ex].every(Number.isFinite)&&en!==sl)R=(ex-en)*dir/((en-sl)*dir);if(!Number.isFinite(R)&&Number.isFinite(pnl))R=pnl/risk;
+    if(!ts||!Number.isFinite(R)){bad++;return}
+    add.push({id:'i'+Date.now().toString(36)+k,t:ts.t,sym:(g(ix.sym)||'Otro').toUpperCase().replace(/[^A-Z]/g,'').slice(0,6)||'Otro',dir,setup:g(ix.setup)||'Otra',entry:en||null,sl:sl||null,exit:ex||null,r:+R.toFixed(3),pnl:Number.isFinite(pnl)?pnl:null,src:g(ix.src)||'FXReplay',plan:!/^(no|0|false)$/i.test(g(ix.plan)),note:g(ix.note)});ok++});
+  if(ok){J=J.filter(t=>!t.ej).concat(add);saveJ();renderJ()}
+  $('#jImpMsg').textContent=`Importadas ${ok} operaciones${bad?`, ${bad} filas ignoradas por falta de datos`:''}.`}
+dropZone($('#jDrop'),$('#jFile'),file=>{const rd=new FileReader();rd.onload=()=>{try{importJ(rd.result)}catch(e){$('#jImpMsg').textContent=e.message}};rd.readAsText(file)});
+$('#toJournal').addEventListener('click',()=>{if(!LAST)return;const set=LAST.p.strat==='arb'?'A':'B',sym=$('#inst').value;
+  J=J.filter(t=>!t.ej).concat(LAST.res.trades.map((t,k)=>({id:'bt'+Date.now().toString(36)+k,t:t.t,sym,dir:t.dir,setup:set,entry:t.entry,sl:t.sl,exit:t.exit,r:+t.r.toFixed(3),pnl:Math.round(t.pnl),src:'Demo',plan:true,note:'Backtest '+(SAMPLE?'(datos de ejemplo)':'')})));
+  saveJ();renderJ();$('#toJournal').textContent=`${LAST.res.trades.length} copiadas como cuenta Demo`});
+
+/* ---------- calculadora ---------- */
+function calc(){const bal=+$('#cBal').value,rk=+$('#cRisk').value/100,sym=$('#cSym').value,en=+$('#cEntry').value,sl=+$('#cSL').value;const dist=Math.abs(en-sl);
+  if(!dist||!bal){$('#cOut').textContent='Introduce entrada y stop distintos.';return}
+  const perLot=sym==='XAUUSD'?100:sym==='USDJPY'?100000/en:100000;const risk$=bal*rk,lots=risk$/(dist*perLot);
+  const unit=sym==='XAUUSD'?`$${fmt(dist)} por onza`:`${fmt(dist/(sym==='USDJPY'?0.01:0.0001),1)} pips`;
+  $('#cOut').innerHTML=`Arriesgas <strong>$${fmt(risk$)}</strong> con un stop de ${unit}. Tamaño: <strong class="mono">${fmt(lots,2)} lotes</strong>.`}
+['cBal','cRisk','cSym','cEntry','cSL'].forEach(id=>$('#'+id).addEventListener('input',calc));
+$('#cSym').addEventListener('change',()=>{const d={XAUUSD:[2650,2642],EURUSD:[1.085,1.0835],GBPUSD:[1.29,1.288],USDJPY:[150.2,149.95],AUDUSD:[0.66,0.6588]}[$('#cSym').value];$('#cEntry').value=d[0];$('#cSL').value=d[1];calc()});
+
+dataInfo();route();run();renderJ();calc();
+})();
+</script>
+
+</body>
+</html>

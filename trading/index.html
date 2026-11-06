@@ -473,7 +473,8 @@ td.num,th.num{text-align:right;font-family:var(--f-mono)}
         <tr><td class="mono">Activo · Direccion · Estrategia · Cuenta · Motivo</td><td>Selección</td></tr>
         <tr><td class="mono">Entrada · Stop · Salida · Lotes</td><td>Número</td></tr>
         <tr><td class="mono">Riesgo USD · Riesgo % · R · PL USD · Balance</td><td>Número</td></tr>
-        <tr><td class="mono">Plan</td><td>Casilla</td></tr>
+        <tr><td class="mono">Plan · Ganadora</td><td>Casilla</td></tr>
+        <tr><td class="mono">Resumen</td><td>Relación con la base «Panel» (opcional; calcula el winrate y el factor de beneficio automáticamente)</td></tr>
       </tbody></table></div>
     <ol start="3">
       <li>En la base de datos abre el menú <b>•••</b> › <b>Conexiones</b> y agrega tu integración.</li>
@@ -481,7 +482,7 @@ td.num,th.num{text-align:right;font-family:var(--f-mono)}
       <li>En MT5 ve a <b>Herramientas › Opciones › Asesores Expertos</b>, marca <b>Permitir WebRequest</b> y agrega <span class="mono">https://api.notion.com</span>.</li>
       <li>En los parámetros del robot activa <span class="mono">Enviar cada operacion a Notion</span> y pega el token y el ID.</li>
     </ol>
-    <p>Cada operación que se cierra crea una fila con fecha, activo, lotes, riesgo en dólares y en porcentaje, resultado en R y en dólares, balance y si se cerró según el plan. Para ver totales, usa el pie de cada columna en Notion (<b>Calcular</b>): suma de <span class="mono">PL USD</span>, promedio de <span class="mono">R</span> y porcentaje marcado de <span class="mono">Plan</span>. Para el porcentaje de acierto, agrega una fórmula <span class="mono">Ganadora</span> = <span class="mono">prop("PL USD") &gt; 0</span> y usa <b>Porcentaje marcado</b>.</p>
+    <p>Cada operación que se cierra crea una fila con fecha, activo, lotes, riesgo en dólares y en porcentaje, resultado en R y en dólares, balance y si se cerró según el plan. Para ver totales, usa el pie de cada columna en Notion (<b>Calcular</b>): suma de <span class="mono">PL USD</span>, promedio de <span class="mono">R</span> y porcentaje marcado de <span class="mono">Plan</span>. El robot marca la casilla <span class="mono">Ganadora</span>; usa <b>Porcentaje marcado</b> en esa columna para ver el porcentaje de acierto.</p>
     <p class="note">El token de Notion se guarda solo en tu MT5, nunca en esta página. Si Notion falla, la operación queda igual en el CSV.</p>
   </section>
 

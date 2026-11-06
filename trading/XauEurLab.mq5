@@ -8,7 +8,7 @@
 //| All session hours are in UTC.                                    |
 //+------------------------------------------------------------------+
 #property copyright "XAU-EUR Lab"
-#property version   "1.00"
+#property version   "1.10"
 #property description "Ruptura del rango asiatico (A) y retroceso a la EMA (B) con gestion de riesgo y registro en CSV/Notion."
 
 #include <Trade/Trade.mqh>
@@ -70,6 +70,8 @@ input string            InpCSVName       = "XauEurLab_diario.csv"; // Nombre del
 input bool              InpSendNotion    = false;         // Enviar cada operacion a Notion
 input string            InpNotionToken   = "";            // Token de la integracion de Notion
 input string            InpNotionDB      = "";            // ID de la base de datos de Notion
+input string            InpNotionSummary = "";            // ID de la pagina Resumen (opcional, para winrate automatico)
+input bool              InpPushNotify    = false;         // Enviar aviso al celular al cerrar cada operacion
 
 input group "General"
 input long              InpMagic         = 240611;        // Numero magico (A usa este, B usa +1)
@@ -504,9 +506,14 @@ void LogClosedTrade(const ulong deal)
       "\"R\":{\"number\":" + Num(r, 2) + "}," +
       "\"PL USD\":{\"number\":" + Num(pl, 2) + "}," +
       "\"Balance\":{\"number\":" + Num(balance, 2) + "}," +
-      "\"Plan\":{\"checkbox\":" + (plan ? "true" : "false") + "}" +
+      "\"Plan\":{\"checkbox\":" + (plan ? "true" : "false") + "}," +
+      "\"Ganadora\":{\"checkbox\":" + (pl > 0 ? "true" : "false") + "}" +
+      (InpNotionSummary != "" ? ",\"Resumen\":{\"relation\":[{\"id\":\"" + JsonEsc(InpNotionSummary) + "\"}]}" : "") +
       "}}";
    SendNotion(json);
+   if(InpPushNotify && !MQLInfoInteger(MQL_TESTER))
+      SendNotification(StringFormat("XEL %s %s %s: %+.2f USD (%+.2fR) - %s. Balance %.2f",
+                                    sym, strat, (dir > 0 ? "Compra" : "Venta"), pl, r, why, balance));
   }
 
 //+------------------------------------------------------------------+

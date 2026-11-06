@@ -69,6 +69,9 @@ button.primary{background:var(--gold);border-color:var(--gold);color:var(--surfa
 button.primary:hover{filter:brightness(1.07)}
 button.ghost{background:transparent}
 button.small{padding:4px 9px;font-size:12px}
+a.dl{display:inline-block;font-weight:600;font-size:14px;border-radius:6px;padding:9px 16px;background:var(--gold);color:var(--surface);text-decoration:none}
+a.dl:hover{filter:brightness(1.07)}
+.plan a:not(.dl){color:var(--euro)}
 .btns{display:flex;flex-wrap:wrap;gap:8px}
 .drop{border:1.5px dashed var(--line);border-radius:8px;padding:14px;text-align:center;font-size:13px;color:var(--muted);cursor:pointer}
 .drop.over{border-color:var(--gold);background:var(--gold-soft)}
@@ -106,7 +109,8 @@ td.num,th.num{text-align:right;font-family:var(--f-mono)}
 /* Plan */
 .plan{display:grid;gap:28px;max-width:900px}
 .plan section{display:grid;gap:12px}
-.plan p,.plan li{max-width:70ch}
+.plan p,.plan li{max-width:70ch;overflow-wrap:anywhere}
+.plan{min-width:0}
 .plan ul,.plan ol{margin:0;padding-left:20px;display:grid;gap:6px}
 .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
 .rule{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:10px;align-content:start}
@@ -129,6 +133,7 @@ td.num,th.num{text-align:right;font-family:var(--f-mono)}
     <nav class="tabs" aria-label="Secciones">
       <a href="#backtest" data-v="backtest">Robot de backtest</a>
       <a href="#diario" data-v="diario">Diario FXReplay</a>
+      <a href="#mt5" data-v="mt5">MetaTrader 5</a>
       <a href="#plan" data-v="plan">Plan de trading</a>
     </nav>
   </div>
@@ -248,7 +253,7 @@ td.num,th.num{text-align:right;font-family:var(--f-mono)}
           <div class="field"><label for="jPnl">P/L $</label><input type="number" id="jPnl" step="any"></div>
         </div>
         <div class="row2">
-          <div class="field"><label for="jSrc">Cuenta</label><select id="jSrc"><option>FXReplay</option><option>Demo</option><option>Real</option></select></div>
+          <div class="field"><label for="jSrc">Cuenta</label><select id="jSrc"><option>FXReplay</option><option>Demo</option><option>Real</option><option>Backtest</option></select></div>
           <div class="field"><label for="jPlan">¿Seguiste el plan?</label><select id="jPlan"><option value="1">Sí</option><option value="0">No</option></select></div>
         </div>
         <div class="field"><label for="jNote">Notas</label><input type="text" id="jNote" placeholder="Motivo, emoción, error…"></div>
@@ -269,10 +274,10 @@ td.num,th.num{text-align:right;font-family:var(--f-mono)}
       </div>
       <div class="panel">
         <h3>Importar / exportar</h3>
-        <p class="hint">Pega o carga un CSV con columnas como fecha, símbolo, tipo, entrada, stop, salida, profit o R. Sirve el historial exportado de FXReplay o MetaTrader.</p>
+        <p class="hint">Carga el CSV que genera el robot de MT5, o cualquier CSV con columnas de fecha, símbolo, tipo, entrada, stop, salida, profit o R (por ejemplo, un historial de FXReplay).</p>
         <div class="drop" id="jDrop" tabindex="0" role="button">Cargar CSV de operaciones</div>
         <input type="file" id="jFile" accept=".csv,.txt,text/csv" hidden>
-        <div class="field"><label for="jRisk$">Riesgo por trade $ (para pasar P/L a R si falta)</label><input type="number" id="jRisk$" value="100"></div>
+        <div class="field"><label for="jRiskUsd">Riesgo por trade $ (para pasar P/L a R si falta)</label><input type="number" id="jRiskUsd" value="100"></div>
         <div id="jImpMsg" class="hint"></div>
         <div class="btns"><button type="button" id="jExport">Mostrar CSV</button><button type="button" class="ghost" id="jClear">Borrar todo</button></div>
         <div id="jClearConfirm" class="note" hidden>¿Borrar todas las operaciones de este navegador? <div class="btns" style="margin-top:8px"><button type="button" class="small" id="jClearYes">Sí, borrar</button><button type="button" class="small ghost" id="jClearNo">Cancelar</button></div></div>
@@ -281,7 +286,7 @@ td.num,th.num{text-align:right;font-family:var(--f-mono)}
     </div>
     <div class="stack">
       <div id="jSampleNote" class="note" hidden><strong>Estas operaciones son ejemplos</strong> para que veas cómo funciona. Desaparecen al guardar tu primera operación. <button type="button" class="small" id="jDropSamples">Quitar ejemplos</button></div>
-      <div class="btns"><div class="field" style="min-width:150px"><label for="jfSrc">Cuenta</label><select id="jfSrc"><option value="">Todas</option><option>FXReplay</option><option>Demo</option><option>Real</option></select></div>
+      <div class="btns"><div class="field" style="min-width:150px"><label for="jfSrc">Cuenta</label><select id="jfSrc"><option value="">Todas</option><option>FXReplay</option><option>Demo</option><option>Real</option><option>Backtest</option></select></div>
         <div class="field" style="min-width:150px"><label for="jfSym">Activo</label><select id="jfSym"><option value="">Todos</option><option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option><option>AUDUSD</option><option>Otro</option></select></div>
         <div class="field" style="min-width:150px"><label for="jfSet">Estrategia</label><select id="jfSet"><option value="">Todas</option><option value="A">A</option><option value="B">B</option><option>Otra</option></select></div></div>
       <div class="kpis" id="jKpis"></div>
@@ -398,6 +403,96 @@ td.num,th.num{text-align:right;font-family:var(--f-mono)}
   <p class="caveat">El trading con apalancamiento tiene alto riesgo: la mayoría de las cuentas minoristas de CFD y forex pierden dinero. Un backtest rentable no garantiza resultados futuros. Usa solo dinero que puedas permitirte perder.</p>
 </div>
 </section>
+<!-- ============ MT5 ============ -->
+<section class="view" id="v-mt5" hidden>
+<div class="plan">
+  <div class="stack">
+    <span class="eyebrow">Robot en MetaTrader 5 · Expert Advisor</span>
+    <h1>Ejecuta las estrategias en MetaTrader 5 y registra todo en Notion</h1>
+    <p class="lede">XauEurLab es un Expert Advisor: el robot que vive dentro de MT5. Opera las estrategias A y B con las mismas reglas de este laboratorio, calcula el lote según tu riesgo, respeta los límites diarios y semanales y guarda cada operación cerrada en un CSV y en Notion.</p>
+    <div class="btns"><a class="dl" href="https://github.com/jorgeagario123456-cell/jorgeagario123456-celda1.github.io/blob/main/trading/XauEurLab.mq5" target="_blank" rel="noopener">Descargar XauEurLab.mq5</a></div>
+  </div>
+
+  <section>
+    <h2>Dónde se inicia sesión</h2>
+    <p>Inicias sesión en MetaTrader 5 con los datos de tu bróker: <b>Archivo › Iniciar sesión en cuenta comercial</b>. El robot opera con esa sesión. Esta página nunca pide ni guarda tu contraseña. Así nadie que abra la web puede operar tu cuenta.</p>
+    <p class="note">MT5 tiene que estar abierto para que el robot opere. Si tu computadora se apaga, el robot se detiene. Para operar las 24 horas de lunes a viernes, usa un VPS. MT5 incluye uno en <b>Herramientas › Hosting virtual</b>. La app de MT5 para celular no ejecuta Expert Advisors.</p>
+  </section>
+
+  <section>
+    <h2>Instalación</h2>
+    <ol>
+      <li>Descarga <span class="mono">XauEurLab.mq5</span> con el botón de arriba.</li>
+      <li>En MT5 abre <b>Archivo › Abrir carpeta de datos</b>, entra a <span class="mono">MQL5/Experts</span> y pega el archivo.</li>
+      <li>Abre MetaEditor (F4), abre el archivo y pulsa <b>Compilar</b> (F7). Debe terminar con 0 errores.</li>
+      <li>En MT5 abre un gráfico de XAUUSD o EURUSD en M15 y arrastra XauEurLab desde el Navegador.</li>
+      <li>En la ventana del robot marca <b>Permitir trading algorítmico</b>, revisa los parámetros y acepta.</li>
+      <li>Activa el botón <b>Trading algorítmico</b> de la barra superior. En el gráfico aparece el panel con el estado del día.</li>
+    </ol>
+    <p>Usa un gráfico por activo. Si un activo opera con las dos estrategias, elige <b>A + B</b>. Eso necesita una cuenta de tipo hedging.</p>
+  </section>
+
+  <section>
+    <h2>Pruébalo antes con el probador de MT5</h2>
+    <ol>
+      <li>Pulsa Ctrl+R para abrir el Probador de estrategias.</li>
+      <li>Elige XauEurLab, el símbolo y M15, con el modelo <b>Cada tick basado en ticks reales</b> y al menos dos años de historia.</li>
+      <li>En <span class="mono">Desfase GMT del servidor en el probador</span> pon la hora de tu bróker. La mayoría usa GMT+2 en invierno y GMT+3 en verano.</li>
+      <li>El probador guarda las operaciones en <span class="mono">backtest_XauEurLab_diario.csv</span>. Impórtalo en la pestaña Diario para ver todas las métricas.</li>
+      <li>Después deja el robot un mes en una cuenta demo. Pasa a real solo si cumple los criterios del plan.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Parámetros principales</h2>
+    <div class="tablebox" style="max-height:none"><table>
+      <thead><tr><th>Parámetro</th><th>Valor inicial</th><th>Qué hace</th></tr></thead>
+      <tbody>
+        <tr><td>Estrategia</td><td class="mono">A</td><td>A, B o A + B.</td></tr>
+        <tr><td>Riesgo por operación</td><td class="mono">1 %</td><td>Calcula el lote para perder ese porcentaje si salta el stop. En real empieza con 0.25–0.5 %.</td></tr>
+        <tr><td>Pérdida diaria máxima</td><td class="mono">2 %</td><td>Si el día llega a −2 %, contando lo abierto, no abre más operaciones hasta mañana.</td></tr>
+        <tr><td>Stops seguidos</td><td class="mono">2</td><td>Tras dos pérdidas seguidas en el día, se detiene hasta el día siguiente.</td></tr>
+        <tr><td>Pérdida semanal máxima</td><td class="mono">5 %</td><td>Bloquea entradas el resto de la semana.</td></tr>
+        <tr><td>Filtro de noticias</td><td class="mono">15 min</td><td>No entra 15 minutos antes ni después de noticias de alto impacto del calendario de MT5. Solo funciona en vivo.</td></tr>
+        <tr><td>Hora de cierre</td><td class="mono">20 UTC</td><td>Cierra lo que siga abierto. No deja operaciones abiertas de noche.</td></tr>
+        <tr><td>Spread máximo</td><td class="mono">0</td><td>En puntos. Si el spread lo supera, no entra. 0 lo desactiva.</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section>
+    <h2>Registro automático en Notion</h2>
+    <ol>
+      <li>Crea una integración interna en <a href="https://www.notion.so/profile/integrations" target="_blank" rel="noopener">notion.so/profile/integrations</a> y copia el token secreto.</li>
+      <li>Crea una base de datos en Notion con estas propiedades. Los nombres deben coincidir exactamente.</li>
+    </ol>
+    <div class="tablebox" style="max-height:none"><table>
+      <thead><tr><th>Propiedad</th><th>Tipo</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">Operacion</td><td>Título</td></tr>
+        <tr><td class="mono">Fecha</td><td>Fecha</td></tr>
+        <tr><td class="mono">Activo · Direccion · Estrategia · Cuenta · Motivo</td><td>Selección</td></tr>
+        <tr><td class="mono">Entrada · Stop · Salida · Lotes</td><td>Número</td></tr>
+        <tr><td class="mono">Riesgo USD · Riesgo % · R · PL USD · Balance</td><td>Número</td></tr>
+        <tr><td class="mono">Plan</td><td>Casilla</td></tr>
+      </tbody></table></div>
+    <ol start="3">
+      <li>En la base de datos abre el menú <b>•••</b> › <b>Conexiones</b> y agrega tu integración.</li>
+      <li>Copia el ID de la base de datos: son los 32 caracteres del enlace, antes del <span class="mono">?v=</span>.</li>
+      <li>En MT5 ve a <b>Herramientas › Opciones › Asesores Expertos</b>, marca <b>Permitir WebRequest</b> y agrega <span class="mono">https://api.notion.com</span>.</li>
+      <li>En los parámetros del robot activa <span class="mono">Enviar cada operacion a Notion</span> y pega el token y el ID.</li>
+    </ol>
+    <p>Cada operación que se cierra crea una fila con fecha, activo, lotes, riesgo en dólares y en porcentaje, resultado en R y en dólares, balance y si se cerró según el plan. Para ver totales, usa el pie de cada columna en Notion (<b>Calcular</b>): suma de <span class="mono">PL USD</span>, promedio de <span class="mono">R</span> y porcentaje marcado de <span class="mono">Plan</span>. Para el porcentaje de acierto, agrega una fórmula <span class="mono">Ganadora</span> = <span class="mono">prop("PL USD") &gt; 0</span> y usa <b>Porcentaje marcado</b>.</p>
+    <p class="note">El token de Notion se guarda solo en tu MT5, nunca en esta página. Si Notion falla, la operación queda igual en el CSV.</p>
+  </section>
+
+  <section>
+    <h2>El diario CSV</h2>
+    <p>Cada operación cerrada se agrega a <span class="mono">XauEurLab_diario.csv</span> en la carpeta común de MetaTrader: <span class="mono">%APPDATA%\MetaQuotes\Terminal\Common\Files</span>. Puedes abrirlo en Excel o Google Sheets, o cargarlo en la pestaña Diario de este laboratorio para ver la curva, el drawdown y el veredicto.</p>
+  </section>
+
+  <p class="caveat">Prueba siempre primero en el probador y en demo. Un robot ejecuta reglas sin criterio propio: si las reglas no tienen ventaja, pierde dinero más rápido y con más disciplina que una persona.</p>
+</div>
+</section>
 </main>
 
 <script>
@@ -412,7 +507,7 @@ const DAY=864e5, HOUR=36e5;
 const dstr=t=>{const d=new Date(t);return d.toISOString().slice(0,16).replace('T',' ')};
 
 /* ---------- vistas ---------- */
-const views=['backtest','diario','plan'];
+const views=['backtest','diario','mt5','plan'];
 function route(){const v=views.includes(location.hash.slice(1))?location.hash.slice(1):'backtest';
   views.forEach(n=>{$('#v-'+n).hidden=n!==v;document.querySelector(`nav a[data-v="${n}"]`).toggleAttribute('aria-current',n===v);if(n===v)document.querySelector(`nav a[data-v="${n}"]`).setAttribute('aria-current','page')});
   requestAnimationFrame(redraw);}
@@ -581,7 +676,7 @@ function autoR(){const e=+$('#jEntry').value,s=+$('#jSL').value,x=+$('#jExit').v
 ['jEntry','jSL','jExit','jDir'].forEach(id=>$('#'+id).addEventListener('input',autoR));
 $('#jForm').addEventListener('submit',e=>{e.preventDefault();const dir=+$('#jDir').value,en=+$('#jEntry').value,sl=+$('#jSL').value,ex=+$('#jExit').value;
   let r=$('#jR').value!==''?+$('#jR').value:($('#jEntry').value&&$('#jSL').value&&$('#jExit').value&&en!==sl?(ex-en)*dir/((en-sl)*dir):NaN);
-  const pnl=$('#jPnl').value!==''?+$('#jPnl').value:null;if(!Number.isFinite(r)&&pnl!=null)r=pnl/(+$('#jRisk$').value||100);
+  const pnl=$('#jPnl').value!==''?+$('#jPnl').value:null;if(!Number.isFinite(r)&&pnl!=null)r=pnl/(+$('#jRiskUsd').value||100);
   if(!Number.isFinite(r)){$('#jR').focus();$('#jR').placeholder='Falta: R o entrada/stop/salida';return}
   if(J.some(t=>t.ej))J=J.filter(t=>!t.ej);
   J.push({id:Date.now().toString(36),t:new Date($('#jDate').value).getTime(),sym:$('#jSym').value,dir,setup:$('#jSetup').value,entry:en||null,sl:sl||null,exit:ex||null,r:+r.toFixed(3),pnl,src:$('#jSrc').value,plan:$('#jPlan').value==='1',note:$('#jNote').value.trim()});
@@ -618,7 +713,7 @@ function importJ(text){const {delim,rows}=splitRows(text);const h=rows[0].map(x=
     sl:f('stop','sl','stop loss','s/l','stoploss'),exit:f('salida','exit','exit price','close price','precio cierre'),r:f('r','r multiple','rr','r-multiple','resultado r'),pnl:f('pnl','profit','p/l','net profit','resultado','ganancia','net p/l','realized pnl'),
     src:f('cuenta','account'),plan:f('plan'),note:f('notas','notes','comment','comentario')};
   if(ix.t<0||(ix.r<0&&ix.pnl<0&&ix.exit<0))throw new Error('Necesito al menos una columna de fecha y otra de profit, R o precio de salida.');
-  const risk=+$('#jRisk$').value||100;let ok=0,bad=0;const add=[];
+  const risk=+$('#jRiskUsd').value||100;let ok=0,bad=0;const add=[];
   rows.slice(1).forEach((r,k)=>{const ts=parseTime(r[ix.t]);const g=i=>i>=0?r[i]:'';const n=i=>i>=0&&r[i]!==''?num(r[i],delim):NaN;
     const ds=g(ix.dir).toLowerCase();const dir=/sell|short|venta|vender|-1/.test(ds)?-1:1;const en=n(ix.entry),sl=n(ix.sl),ex=n(ix.exit),pnl=n(ix.pnl);
     let R=n(ix.r);if(!Number.isFinite(R)&&[en,sl,ex].every(Number.isFinite)&&en!==sl)R=(ex-en)*dir/((en-sl)*dir);if(!Number.isFinite(R)&&Number.isFinite(pnl))R=pnl/risk;
